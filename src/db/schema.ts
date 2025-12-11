@@ -13,6 +13,7 @@ export const products = pgTable("products", {
   category: text("category").notNull(),
   imageUrl: text("image_url"),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
+  colors: text("colors"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

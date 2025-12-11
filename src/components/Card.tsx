@@ -5,9 +5,10 @@ interface CardProps {
   category: string;
   price: string;
   imageUrl: string;
+  colors?: string | null;
 }
 
-export default function Card({ title, category, price, imageUrl }: CardProps) {
+export default function Card({ title, category, price, imageUrl, colors }: CardProps) {
   return (
     <div className="group relative flex flex-col gap-4 font-jost">
       {/* Image Container */}
@@ -23,18 +24,25 @@ export default function Card({ title, category, price, imageUrl }: CardProps) {
 
       {/* Content */}
       <div className="flex flex-col gap-1">
-        <div className="flex justify-between items-start">
+
+        <div className="flex flex-col gap-1">
           <h3 className="text-body-medium font-medium text-dark-900 line-clamp-2">
             <a href="#">
                 <span aria-hidden="true" className="absolute inset-0" />
                 {title}
             </a>
           </h3>
-          <p className="text-body-medium font-medium text-dark-900 whitespace-nowrap pl-2">
+          <p className="text-body-medium text-dark-700">{category}</p>
+        </div>
+          <div className="mb-1">
+              {colors && <p className="text-body font-medium text-dark-700">{colors}</p>}
+          </div>
+        
+        <div className="mt-2">
+           <p className="text-body-medium font-medium text-dark-900">
              ${price}
           </p>
         </div>
-        <p className="text-caption text-dark-700">{category}</p>
       </div>
     </div>
   );

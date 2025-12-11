@@ -23,6 +23,7 @@ export default async function Home() {
                 category={product.category}
                 price={product.price}
                 imageUrl={product.imageUrl || ""}
+                colors={product.colors}
              />
           ))}
         </div>

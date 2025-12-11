@@ -11,6 +11,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-1.jpg",
         price: "140.00",
+        colors: "5 Colors",
     },
     {
         name: "Nike Air Force 1",
@@ -18,6 +19,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-2.webp",
         price: "110.00",
+        colors: "2 Colors",
     },
     {
         name: "Nike Dunk Low",
@@ -25,6 +27,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-3.webp",
         price: "115.00",
+        colors: "4 Colors",
     },
     {
         name: "Nike Zoom Vomero",
@@ -32,6 +35,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-4.webp",
         price: "160.00",
+        colors: "6 Colors",
     },
     {
         name: "Nike Air Max 90",
@@ -39,6 +43,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-5.avif",
         price: "130.00",
+        colors: "3 Colors",
     },
     {
         name: "Nike Pegasus 40",
@@ -46,6 +51,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-6.avif",
         price: "130.00",
+        colors: "8 Colors",
     },
     {
         name: "Nike Metcon 9",
@@ -53,6 +59,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-7.avif",
         price: "150.00",
+        colors: "5 Colors",
     },
     {
         name: "Nike Calm Slide",
@@ -60,6 +67,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-8.avif",
         price: "50.00",
+        colors: "9 Colors",
     },
     {
         name: "Nike Blazer Mid '77",
@@ -67,6 +75,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-9.avif",
         price: "105.00",
+        colors: "3 Colors",
     },
     {
         name: "Nike Air Max Plus",
@@ -74,6 +83,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-10.avif",
         price: "180.00",
+        colors: "7 Colors",
     },
     {
         name: "Nike P-6000",
@@ -81,6 +91,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-11.avif",
         price: "120.00",
+        colors: "2 Colors",
     },
     {
         name: "Nike Air Huarache",
@@ -88,6 +99,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-12.avif",
         price: "125.00",
+        colors: "4 Colors",
     },
     {
         name: "Nike Cortez",
@@ -95,6 +107,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-13.avif",
         price: "90.00",
+        colors: "3 Colors",
     },
     {
         name: "Nike Monarch IV",
@@ -102,6 +115,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-14.avif",
         price: "75.00",
+        colors: "2 Colors",
     },
     {
         name: "Nike Air Max 97",
@@ -109,6 +123,7 @@ const SAMPLE_PRODUCTS = [
         category: "Shoes",
         imageUrl: "/shoes/shoe-15.avif",
         price: "175.00",
+        colors: "6 Colors",
     },
 ];
 
