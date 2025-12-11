@@ -4,6 +4,7 @@ import {
   serial,
   text,
   timestamp,
+  json,
 } from "drizzle-orm/pg-core";
 
 export const products = pgTable("products", {
@@ -14,6 +15,7 @@ export const products = pgTable("products", {
   imageUrl: text("image_url"),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   colors: text("colors"),
+  badge: json("badge"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .defaultNow()
     .notNull(),

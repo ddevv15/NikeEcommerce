@@ -1,6 +1,6 @@
-import { Card } from "../components/index";
-import { db } from "../db";
-import { products } from "../db/schema";
+import { Card } from "../../components/index";
+import { db } from "../../db";
+import { products } from "../../db/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -24,6 +24,7 @@ export default async function Home() {
                 price={product.price}
                 imageUrl={product.imageUrl || ""}
                 colors={product.colors}
+                badge={product.badge as any}
              />
           ))}
         </div>
