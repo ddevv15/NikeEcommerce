@@ -6,55 +6,119 @@ config({ path: ".env.local" });
 
 const SAMPLE_PRODUCTS = [
     {
-        name: "Nike Air Max Dn",
-        description:
-            "The Nike Air Max Dn features our Dynamic Air unit system of dual-pressure tubes, creating a reactive sensation with every step. This futuristic design results in a design that is comfortable enough to wear all day.",
+        name: "Nike Air Max 1",
+        description: "Iconic style with modern comfort.",
         category: "Shoes",
-        imageUrl:
-            "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/a5448375-7b5c-43f0-b9cc-9e657c91350a/AIR+MAX+DN.png",
+        imageUrl: "/shoes/shoe-1.jpg",
+        price: "140.00",
+    },
+    {
+        name: "Nike Air Force 1",
+        description: "The classic look you love.",
+        category: "Shoes",
+        imageUrl: "/shoes/shoe-2.webp",
+        price: "110.00",
+    },
+    {
+        name: "Nike Dunk Low",
+        description: "Streetwear favorite.",
+        category: "Shoes",
+        imageUrl: "/shoes/shoe-3.webp",
+        price: "115.00",
+    },
+    {
+        name: "Nike Zoom Vomero",
+        description: "Responsive cushioning for your run.",
+        category: "Shoes",
+        imageUrl: "/shoes/shoe-4.webp",
         price: "160.00",
     },
     {
-        name: "Nike Air Force 1 '07",
-        description:
-            "The radiance lives on in the Nike Air Force 1 '07, the b-ball icon that puts a fresh spin on what you know best: crisp leather, bold colors and the perfect amount of flash to make you shine.",
+        name: "Nike Air Max 90",
+        description: "Heritage style with Max Air.",
         category: "Shoes",
-        imageUrl:
-            "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/b7d9211c-26e7-431a-ac24-b0540fb3c00f/AIR+FORCE+1+%2707.png",
-        price: "115.00",
+        imageUrl: "/shoes/shoe-5.avif",
+        price: "130.00",
     },
     {
-        name: "Nike Dunk Low Retro",
-        description:
-            "Created for the hardwood but taken to the streets, the '80s b-ball icon returns with perfectly sheened overlays and original university colors. With its classic hoops design, the Nike Dunk Low Retro channels '80s vintage back onto the streets while its padded, low-cut collar lets you take your game anywhere—in comfort.",
+        name: "Nike Pegasus 40",
+        description: "A daily workhorse with a springy ride.",
         category: "Shoes",
-        imageUrl:
-            "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/a3e7dead-1ad2-4c40-996d-93ebc9df0fca/DUNK+LOW+RETRO.png",
-        price: "115.00",
+        imageUrl: "/shoes/shoe-6.avif",
+        price: "130.00",
     },
     {
-        name: "Nike Sportswear Tech Fleece Windrunner",
-        description:
-            "Blending two of our most iconic looks, this full-zip hoodie draws design inspiration from our timeless Windrunner jacket as well as our Tech Fleece jacket. It's designed to feel relaxed through the shoulders, chest and body for an athletic fit you can layer. Our premium, smooth-on-both-sides fleece feels warmer and softer than ever, while keeping the same lightweight build you love.",
-        category: "Apparel",
-        imageUrl:
-            "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/e69fa033-5c8e-4da5-9b2f-7634f195d2c5/AS+M+NK+TCH+FLC+WR+FZ+HDY+REV.png",
-        price: "145.00",
+        name: "Nike Metcon 9",
+        description: "Durability and stability for your workout.",
+        category: "Shoes",
+        imageUrl: "/shoes/shoe-7.avif",
+        price: "150.00",
     },
     {
-        name: "Nike Sportswear Club Fleece",
-        description:
-            "Club Fleece sweatshirts, universally loved for their coziness and consistency, are for everyone. Always soft and made with our standard fit, they’re essentials that help you do more. This crew-neck option is a cold-weather essential.",
-        category: "Apparel",
-        imageUrl:
-            "https://static.nike.com/a/images/t_PDP_1728_v1/f_auto,q_auto:eco/8806950f-2395-4654-8c88-6625505dbec9/M+NK+CLUB+CRW+BB.png",
-        price: "60.00",
+        name: "Nike Calm Slide",
+        description: "Minimalist comfort.",
+        category: "Shoes",
+        imageUrl: "/shoes/shoe-8.avif",
+        price: "50.00",
+    },
+    {
+        name: "Nike Blazer Mid '77",
+        description: "Vintage hoops style.",
+        category: "Shoes",
+        imageUrl: "/shoes/shoe-9.avif",
+        price: "105.00",
+    },
+    {
+        name: "Nike Air Max Plus",
+        description: "Tunned Air experience.",
+        category: "Shoes",
+        imageUrl: "/shoes/shoe-10.avif",
+        price: "180.00",
+    },
+    {
+        name: "Nike P-6000",
+        description: "Retro running vibes.",
+        category: "Shoes",
+        imageUrl: "/shoes/shoe-11.avif",
+        price: "120.00",
+    },
+    {
+        name: "Nike Air Huarache",
+        description: "Foot-hugging comfort.",
+        category: "Shoes",
+        imageUrl: "/shoes/shoe-12.avif",
+        price: "125.00",
+    },
+    {
+        name: "Nike Cortez",
+        description: "The original running shoe.",
+        category: "Shoes",
+        imageUrl: "/shoes/shoe-13.avif",
+        price: "90.00",
+    },
+    {
+        name: "Nike Monarch IV",
+        description: "Total comfort for training.",
+        category: "Shoes",
+        imageUrl: "/shoes/shoe-14.avif",
+        price: "75.00",
+    },
+    {
+        name: "Nike Air Max 97",
+        description: "Ripple design lines.",
+        category: "Shoes",
+        imageUrl: "/shoes/shoe-15.avif",
+        price: "175.00",
     },
 ];
 
 async function seed() {
     console.log("Seeding database...");
     try {
+        // Clear existing products
+        await db.delete(products);
+        console.log("Cleared existing products.");
+
         for (const product of SAMPLE_PRODUCTS) {
             await db.insert(products).values(product);
         }
