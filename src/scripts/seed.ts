@@ -1,8 +1,13 @@
-import { db } from "../db";
-import { products } from "../db/schema";
 import { config } from "dotenv";
+import path from "path";
 
-config({ path: ".env.local" });
+// 1. Load Environment Variables First
+config({ path: path.resolve(process.cwd(), ".env.local") });
+
+// 2. Import Connection Dependencies
+import { neon } from "@neondatabase/serverless";
+import { drizzle } from "drizzle-orm/neon-http";
+import { products } from "../lib/db/schema";
 
 const SAMPLE_PRODUCTS = [
     {
@@ -143,6 +148,14 @@ const SAMPLE_PRODUCTS = [
 ];
 
 async function seed() {
+    if (!process.env.DATABASE_URL) {
+        throw new Error("DATABASE_URL is not set");
+    }
+
+    console.log("Initializing DB connection for seeding...");
+    const client = neon(process.env.DATABASE_URL);
+    const db = drizzle(client);
+
     console.log("Seeding database...");
     try {
         // Clear existing products
@@ -155,6 +168,7 @@ async function seed() {
         console.log("Seeding complete!");
     } catch (error) {
         console.error("Error seeding database:", error);
+        process.exit(1);
     } finally {
         process.exit(0);
     }

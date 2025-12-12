@@ -1,161 +1,143 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import SocialProviders from "./SocialProviders";
-import Image from "next/image";
+import {useRouter} from "next/navigation";
 
-interface AuthFormProps {
-  type: "sign-in" | "sign-up";
-}
+type Props = {
+  mode: "sign-in" | "sign-up";
+  onSubmit: (formData: FormData) => Promise<{ ok: boolean; userId?: string } | void>;
+};
 
-export default function AuthForm({ type }: AuthFormProps) {
+export default function AuthForm({ mode, onSubmit }: Props) {
+  const [show, setShow] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const formData = new FormData(e.currentTarget);
+
+    try {
+      const result = await onSubmit(formData);
+
+      if(result?.ok) router.push("/");
+    } catch (e) {
+      console.log("error", e);
+    }
+  }
+
   return (
-    <div className="bg-white px-6 py-12 shadow sm:rounded-lg sm:px-12 font-jost">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md mb-8">
-        <Image
-          className="mx-auto h-8 w-auto"
-          src="/logo.png"
-          alt="Nike"
-          width={60}
-          height={30}
-        />
-        <h2 className="mt-6 text-center text-heading-3 font-bold tracking-tight text-gray-900">
-          {type === "sign-in" ? "Sign in to your account" : "Create your account"}
-        </h2>
-        
-        {type === "sign-up" && (
-            <p className="mt-2 text-center text-sm text-gray-600">
-              Join us to get the latest updates and exclusive offers.
-            </p>
-        )}
+    <div className="space-y-6">
+      <div className="text-center">
+        <p className="text-caption text-dark-700">
+          {mode === "sign-in" ? "Don’t have an account? " : "Already have an account? "}
+          <Link href={mode === "sign-in" ? "/sign-up" : "/sign-in"} className="underline">
+            {mode === "sign-in" ? "Sign Up" : "Sign In"}
+          </Link>
+        </p>
+        <h1 className="mt-3 text-heading-3 text-dark-900">
+          {mode === "sign-in" ? "Welcome Back!" : "Join Nike Today!"}
+        </h1>
+        <p className="mt-1 text-body text-dark-700">
+          {mode === "sign-in"
+            ? "Sign in to continue your journey"
+            : "Create your account to start your fitness journey"}
+        </p>
       </div>
 
-      <form className="space-y-6" action="#">
-        {type === "sign-up" && (
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium leading-6 text-gray-900"
-            >
+      <SocialProviders variant={mode} />
+
+      <div className="flex items-center gap-4">
+        <hr className="h-px w-full border-0 bg-light-300" />
+        <span className="shrink-0 text-caption text-dark-700">
+          Or {mode === "sign-in" ? "sign in" : "sign up"} with
+        </span>
+        <hr className="h-px w-full border-0 bg-light-300" />
+      </div>
+
+      <form
+        className="space-y-4"
+        onSubmit={handleSubmit}
+      >
+        {mode === "sign-up" && (
+          <div className="space-y-1">
+            <label htmlFor="name" className="text-caption text-dark-900">
               Name
             </label>
-            <div className="mt-2">
-              <input
-                id="name"
-                name="name"
-                type="text"
-                autoComplete="name"
-                required
-                className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black sm:text-sm sm:leading-6 pl-3"
-              />
-            </div>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              placeholder="Enter your name"
+              className="w-full rounded-xl border border-light-300 bg-light-100 px-4 py-3 text-body text-dark-900 placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-dark-900/10"
+              autoComplete="name"
+            />
           </div>
         )}
 
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium leading-6 text-gray-900"
-          >
-            Email address
+        <div className="space-y-1">
+          <label htmlFor="email" className="text-caption text-dark-900">
+            Email
           </label>
-          <div className="mt-2">
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black sm:text-sm sm:leading-6 pl-3"
-            />
-          </div>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            placeholder="johndoe@gmail.com"
+            className="w-full rounded-xl border border-light-300 bg-light-100 px-4 py-3 text-body text-dark-900 placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-dark-900/10"
+            autoComplete="email"
+            required
+          />
         </div>
 
-        <div>
-          <div className="flex items-center justify-between">
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium leading-6 text-gray-900"
-            >
-              Password
-            </label>
-            {type === "sign-in" && (
-                <div className="text-sm">
-                  <a href="#" className="font-semibold text-gray-600 hover:text-black">
-                    Forgot password?
-                  </a>
-                </div>
-            )}
-          </div>
-          <div className="mt-2">
+        <div className="space-y-1">
+          <label htmlFor="password" className="text-caption text-dark-900">
+            Password
+          </label>
+          <div className="relative">
             <input
               id="password"
               name="password"
-              type="password"
-              autoComplete="current-password"
+              type={show ? "text" : "password"}
+              placeholder="minimum 8 characters"
+              className="w-full rounded-xl border border-light-300 bg-light-100 px-4 py-3 pr-12 text-body text-dark-900 placeholder:text-dark-500 focus:outline-none focus:ring-2 focus:ring-dark-900/10"
+              autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
+              minLength={8}
               required
-              className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-black sm:text-sm sm:leading-6 pl-3"
             />
+            <button
+              type="button"
+              className="absolute inset-y-0 right-0 px-3 text-caption text-dark-700"
+              onClick={() => setShow((v) => !v)}
+              aria-label={show ? "Hide password" : "Show password"}
+            >
+              {show ? "Hide" : "Show"}
+            </button>
           </div>
         </div>
 
-        {type === "sign-up" && (
-            <div className="flex items-start">
-              <div className="flex h-6 items-center">
-                <input
-                  id="privacy"
-                  name="privacy"
-                  type="checkbox"
-                  className="h-4 w-4 rounded border-gray-300 text-black focus:ring-black"
-                />
-              </div>
-              <div className="ml-3 text-sm leading-6">
-                <label htmlFor="privacy" className="text-gray-600">
-                  I agree to the <a href="#" className="font-semibold text-black hover:underline">Privacy Policy</a> and <a href="#" className="font-semibold text-black hover:underline">Terms of Use</a>.
-                </label>
-              </div>
-            </div>
-          )}
+        <button
+          type="submit"
+          className="mt-2 w-full rounded-full bg-dark-900 px-6 py-3 text-body-medium text-light-100 hover:bg-dark-700 focus:outline-none focus:ring-2 focus:ring-dark-900/20"
+        >
+          {mode === "sign-in" ? "Sign In" : "Sign Up"}
+        </button>
 
-        <div>
-          <button
-            type="submit"
-            className="flex w-full justify-center rounded-md bg-black px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-gray-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-black uppercase tracking-wider"
-          >
-            {type === "sign-in" ? "Sign In" : "Sign Up"}
-          </button>
-        </div>
+        {mode === "sign-up" && (
+          <p className="text-center text-footnote text-dark-700">
+            By signing up, you agree to our{" "}
+            <a href="#" className="underline">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="#" className="underline">
+              Privacy Policy
+            </a>
+          </p>
+        )}
       </form>
-
-      <div className="mt-10">
-        <div className="relative">
-          <div
-            className="absolute inset-0 flex items-center"
-            aria-hidden="true"
-          >
-            <div className="w-full border-t border-gray-200" />
-          </div>
-          <div className="relative flex justify-center text-sm font-medium leading-6">
-            <span className="bg-white px-6 text-gray-900">
-              Or Sign up with
-            </span>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <SocialProviders />
-        </div>
-
-        <p className="mt-10 text-center text-sm text-gray-500">
-          {type === "sign-in" ? "Not a member?" : "Already a member?"}{" "}
-          <Link
-            href={type === "sign-in" ? "/sign-up" : "/sign-in"}
-            className="font-semibold leading-6 text-black hover:underline underline-offset-2"
-          >
-            {type === "sign-in" ? "Join Us" : "Sign In"}
-          </Link>
-        </p>
-      </div>
     </div>
   );
 }

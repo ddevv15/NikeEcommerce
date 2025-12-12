@@ -1,5 +1,6 @@
+import { signIn } from "@/lib/auth/actions";
 import { AuthForm } from "../../../components";
 
 export default function SignInPage() {
-  return <AuthForm type="sign-in" />;
+  return <AuthForm mode="sign-in" onSubmit={signIn} />;
 }

@@ -1,6 +1,6 @@
 import { Card } from "../../components/index";
-import { db } from "../../db";
-import { products } from "../../db/schema";
+import { db } from "../../lib/db";
+import { products } from "../../lib/db/schema";
 
 export const dynamic = "force-dynamic";
 

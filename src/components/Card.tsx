@@ -28,7 +28,7 @@ export default function Card({ title, category, price, imageUrl, colors, badge }
                 ? "bg-[#F36B26] text-white"
                 : badge.tone === "green"
                 ? "bg-[#18A558] text-white"
-                : "bg-danger text-white"
+                : "bg-red text-white"
             }`}
           >
             {badge.label}

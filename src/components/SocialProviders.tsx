@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-export default function SocialProviders() {
+export default function SocialProviders({ variant }: { variant?: "sign-in" | "sign-up" }) {
   return (
     <div className="grid grid-cols-2 gap-3">
       <button
