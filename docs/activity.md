@@ -73,5 +73,12 @@
   - Added 5px left padding (pl-[5px]) to all filter input checkboxes
   - Added 5px left padding (pl-[5px]) to filter option container divs (mt-4 space-y-3)
   - This improves visual alignment and spacing of filter checkboxes
+- 2025-12-10 [Current Date]: Fixed TypeScript build errors for production deployment
+  - Fixed circular dependency issue in products schema by removing direct references to productVariants and productCollections
+  - Used lazy require() in relations to break circular dependencies
+  - Removed .references() calls that caused circular type inference issues
+  - Added type assertions (as { price?: string } | null) for defaultVariant access in homepage and products page
+  - Fixed all TypeScript type errors related to variant and collection relations
+  - Build now succeeds successfully for Vercel deployment
 
 

@@ -70,12 +70,8 @@ async function filterAndSortProducts(filters: ProductFilters) {
     });
     const colorSlugs = colors.map((c) => c.slug);
     filteredProducts = filteredProducts.filter((product) => {
-      return product.variants.some(
-        (
-          variant: typeof productVariants.$inferSelect & {
-            color?: { slug: string } | null;
-          }
-        ) => variant.color && colorSlugs.includes(variant.color.slug)
+      return (product.variants as Array<{ color?: { slug: string } | null }>).some(
+        (variant) => variant.color && colorSlugs.includes(variant.color.slug)
       );
     });
   }
@@ -87,12 +83,8 @@ async function filterAndSortProducts(filters: ProductFilters) {
     });
     const sizeSlugs = sizes.map((s) => s.slug);
     filteredProducts = filteredProducts.filter((product) => {
-      return product.variants.some(
-        (
-          variant: typeof productVariants.$inferSelect & {
-            size?: { slug: string } | null;
-          }
-        ) => variant.size && sizeSlugs.includes(variant.size.slug)
+      return (product.variants as Array<{ size?: { slug: string } | null }>).some(
+        (variant) => variant.size && sizeSlugs.includes(variant.size.slug)
       );
     });
   }
@@ -100,8 +92,9 @@ async function filterAndSortProducts(filters: ProductFilters) {
   // Price range filter
   if (filters.priceRange && filters.priceRange.length > 0) {
     filteredProducts = filteredProducts.filter((product) => {
-      const defaultPrice = product.defaultVariant
-        ? parseFloat(product.defaultVariant.price)
+      const defaultVariant = product.defaultVariant as { price?: string } | null;
+      const defaultPrice = defaultVariant?.price
+        ? parseFloat(defaultVariant.price)
         : null;
       if (defaultPrice === null) return false;
 
@@ -127,23 +120,19 @@ async function filterAndSortProducts(filters: ProductFilters) {
       break;
     case "price_asc":
       sortedProducts.sort((a, b) => {
-        const priceA = a.defaultVariant
-          ? parseFloat(a.defaultVariant.price)
-          : Infinity;
-        const priceB = b.defaultVariant
-          ? parseFloat(b.defaultVariant.price)
-          : Infinity;
+        const variantA = a.defaultVariant as { price?: string } | null;
+        const variantB = b.defaultVariant as { price?: string } | null;
+        const priceA = variantA?.price ? parseFloat(variantA.price) : Infinity;
+        const priceB = variantB?.price ? parseFloat(variantB.price) : Infinity;
         return priceA - priceB;
       });
       break;
     case "price_desc":
       sortedProducts.sort((a, b) => {
-        const priceA = a.defaultVariant
-          ? parseFloat(a.defaultVariant.price)
-          : 0;
-        const priceB = b.defaultVariant
-          ? parseFloat(b.defaultVariant.price)
-          : 0;
+        const variantA = a.defaultVariant as { price?: string } | null;
+        const variantB = b.defaultVariant as { price?: string } | null;
+        const priceA = variantA?.price ? parseFloat(variantA.price) : 0;
+        const priceB = variantB?.price ? parseFloat(variantB.price) : 0;
         return priceB - priceA;
       });
       break;
@@ -275,9 +264,10 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                   id="product-grid"
                   className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8"
                 >
-                  {sortedProducts.map((product) => {
-                    // Get price from default variant
-                    const price = product.defaultVariant?.price ?? "0.00";
+                {sortedProducts.map((product) => {
+                  // Get price from default variant
+                  const defaultVariant = product.defaultVariant as { price?: string } | null;
+                  const price = defaultVariant?.price ?? "0.00";
                     // Get primary image URL (prefer isPrimary, fallback to first image)
                     // Sort images by sortOrder, then find primary or first
                     const images =
@@ -316,8 +306,9 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                       product.gender?.slug ?? null
                     );
                     // Get color from default variant
+                    const defaultVariantWithColor = product.defaultVariant as { color?: { slug: string } | null } | null;
                     const colorLabel = getColorLabel(
-                      product.defaultVariant?.color?.slug ?? null
+                      defaultVariantWithColor?.color?.slug ?? null
                     );
 
                     return (

@@ -25,7 +25,7 @@ export default async function Home() {
         <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
           {allProducts.map((product) => {
             // Get price from default variant
-            const price = product.defaultVariant?.price ?? "0.00";
+            const price = (product.defaultVariant as { price?: string } | null)?.price ?? "0.00";
             // Get primary image URL (prefer isPrimary, fallback to first image)
             const primaryImage = product.images?.find((img: { isPrimary: boolean }) => img.isPrimary) ?? product.images?.[0];
             const imageUrl = primaryImage?.url ?? "";
