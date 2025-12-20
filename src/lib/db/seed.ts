@@ -11,17 +11,14 @@ import { eq } from "drizzle-orm";
 async function main() {
     console.log("🌱 Starting seed...");
 
-    // Ensure uploads directory exists
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    if (!fs.existsSync(uploadsDir)) {
-        fs.mkdirSync(uploadsDir, { recursive: true });
-    }
-
     // --- Clean DB (Optional: Be careful in prod) ---
     // In a real scenario, you might truncate. For now, we append or specific logic.
     // Let's assume clear slate for dev.
     console.log("Cleaning existing data...");
     // Order matters for deletion due to FKs
+    // First, update products to remove defaultVariantId references
+    await db.update(schema.products).set({ defaultVariantId: null });
+    // Then delete in order: items referencing products/variants first, then variants, then products
     await db.delete(schema.orderItems);
     await db.delete(schema.payments);
     await db.delete(schema.orders);
@@ -30,8 +27,8 @@ async function main() {
     await db.delete(schema.reviews);
     await db.delete(schema.wishlists);
     await db.delete(schema.productImages);
-    await db.delete(schema.productVariants);
     await db.delete(schema.productCollections);
+    await db.delete(schema.productVariants); // Delete variants before products
     await db.delete(schema.products);
     await db.delete(schema.collections);
     await db.delete(schema.categories);
@@ -88,8 +85,7 @@ async function main() {
     console.log("Seeding brands...");
     const brandsData = [
         { name: "Nike", slug: "nike", logoUrl: "/uploads/nike-logo.png" }, // Mock logo
-        { name: "Adidas", slug: "adidas" },
-        { name: "Puma", slug: "puma" },
+
     ];
     const insertedBrands = await db.insert(schema.brands).values(brandsData).returning();
     const nikeBrand = insertedBrands.find(b => b.slug === "nike") || insertedBrands[0];
@@ -126,15 +122,9 @@ async function main() {
     let shoeImages: string[] = [];
     if (fs.existsSync(shoesDir)) {
         const files = fs.readdirSync(shoesDir);
-        // Only valid images
-        shoeImages = files.filter(f => /\.(png|jpg|jpeg|webp)$/i.test(f));
-
-        // Copy to uploads
-        shoeImages.forEach(img => {
-            const src = path.join(shoesDir, img);
-            const dest = path.join(uploadsDir, img);
-            fs.copyFileSync(src, dest);
-        });
+        // Only valid images - include avif format
+        shoeImages = files.filter(f => /\.(png|jpg|jpeg|webp|avif)$/i.test(f));
+        console.log(`Found ${shoeImages.length} image files in public/shoes`);
     } else {
         console.warn("No public/shoes directory found. Using placeholders.");
     }
@@ -152,7 +142,7 @@ async function main() {
         const genderId = genderMap.get(genderSlug)!;
 
         // Insert Product
-        const [product] = await db.insert(schema.products).values({
+        const productResult = await db.insert(schema.products).values({
             name: prodName,
             description: faker.commerce.productDescription(),
             categoryId: shoesCategory.id, // Simplifying to shoes for now
@@ -160,6 +150,7 @@ async function main() {
             brandId: nikeBrand.id,
             isPublished: true,
         }).returning();
+        const product = Array.isArray(productResult) ? productResult[0] : productResult;
 
         // Create variants
         const color = faker.helpers.arrayElement(insertedColors);
@@ -171,7 +162,7 @@ async function main() {
             const price = faker.commerce.price({ min: 80, max: 200 });
             const sku = `${prodName.replace(/\s+/g, '-').toUpperCase()}-${color.slug.toUpperCase()}-${size.name}`;
 
-            const [variant] = await db.insert(schema.productVariants).values({
+            const variantResult = await db.insert(schema.productVariants).values({
                 productId: product.id,
                 sku: sku + "-" + faker.string.alphanumeric(4).toUpperCase(), // Ensure unique
                 price: price,
@@ -180,20 +171,26 @@ async function main() {
                 inStock: faker.number.int({ min: 0, max: 50 }),
                 weight: faker.number.float({ min: 0.5, max: 2 }),
             }).returning();
+            const variant = Array.isArray(variantResult) ? variantResult[0] : variantResult;
 
             if (!firstVariantId) firstVariantId = variant.id;
 
             // Add Images to Variant/Product
-            // Pick rand images
-            const imgs = faker.helpers.arrayElements(shoeImages, 2);
+            // Pick random images (ensure we have images available)
+            if (shoeImages.length > 0) {
+                const numImages = Math.min(2, shoeImages.length);
+                const imgs = faker.helpers.arrayElements(shoeImages, numImages);
             for (let i = 0; i < imgs.length; i++) {
                 await db.insert(schema.productImages).values({
                     productId: product.id,
                     variantId: variant.id,
-                    url: `/uploads/${imgs[i]}`,
+                        url: `/shoes/${imgs[i]}`,
                     sortOrder: i,
                     isPrimary: i === 0,
                 });
+                }
+            } else {
+                console.warn(`No images available for product ${prodName}`);
             }
         }
 

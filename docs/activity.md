@@ -12,5 +12,66 @@
     - Styling system (TailwindCSS v4 with custom theme)
   - Identified project structure, tech stack, and data model
   - Noted potential schema mismatch between homepage query and database structure
+- 2025-12-10 [Current Date]: Received prompt "Implement the plan as specified" - Built Product Listing Page with Filters
+  - Installed query-string package
+  - Created query utilities (src/lib/utils/query.ts) for URL parameter handling
+  - Created normalized mock product data (src/lib/data/mock-products.ts) with 25+ products, variants, images
+  - Created product transformation utilities (src/lib/utils/product-transform.ts)
+  - Created filtering and sorting logic (src/lib/utils/product-filters.ts)
+  - Created Filters component (src/components/Filters.tsx) with all filter groups (Gender, Size, Color, Price, Product Type, Sports)
+  - Created Sort component (src/components/Sort.tsx) with dropdown
+  - Created ActiveFilters component (src/components/ActiveFilters.tsx) for removable filter badges
+  - Created products listing page (src/app/(root)/products/page.tsx) with server-side rendering
+  - Added mobile responsive drawer for filters (src/components/MobileFilterDrawer.tsx, FilterDrawerWrapper.tsx)
+  - Updated Navbar links to point to /products with gender filters
+  - Added empty state UI with clear filters option
+  - All components use theme colors and typography from globals.css
+  - Full URL state synchronization with Next.js routing
+- 2025-12-10 [Current Date]: Received prompt "the filters are being rendered twice there is a filter right before the products lets remove that and why do we need to add mock products when we already have products data"
+  - Removed FiltersClient component that was rendering duplicate filters sidebar
+  - Replaced all mock product data with actual database queries using Drizzle ORM
+  - Updated filterAndSortProducts function to query products, genders, colors, sizes from database
+  - Implemented server-side filtering for gender, color, size, and price range
+  - Implemented server-side sorting for newest, price ascending, price descending, and featured
+  - Added proper TypeScript types for all database queries
+  - Added unique IDs to all div elements for styling communication
+  - Products now fetch from database with relations (category, gender, variants, images)
+  - Mobile filters still work via MobileHeader component
+- 2025-12-10 [Current Date]: Received prompt "why are the products images not being rendered, and also the filters div is on the left side and the products should be rendered right next to it, rather than after the filters dic"
+  - Fixed layout: Changed main-content from flex-col to flex-col lg:flex-row so filters appear on left and products on right on desktop
+  - Added FiltersClient back for desktop sidebar (hidden on mobile, mobile uses MobileHeader)
+  - Fixed image rendering: Improved image URL extraction logic with better null/undefined checks
+  - Added debug logging for missing images in development mode
+  - Images are stored in /public/uploads/ directory and should render correctly
+- 2025-12-10 [Current Date]: Received prompt "remove the filters from this div" (products-area div)
+  - Removed Filters component from inside products-area div
+  - Created FilterProvider context to manage filter state at page level
+  - Filters component now renders outside products-area at FilterProvider level
+  - MobileHeader now uses context to trigger filter opening instead of rendering Filters directly
+  - Filters still work correctly but are no longer children of products-area in DOM tree
+- 2025-12-10 [Current Date]: Fixed missing product images issue
+  - Updated seed script to include `.avif` file format in image filter (was only png|jpg|jpeg|webp)
+  - Changed image URLs from `/uploads/` to `/shoes/` to use images directly from public/shoes directory
+  - Removed code that copied images from shoes to uploads directory
+  - Fixed foreign key constraint violation by updating products to set defaultVariantId to null before deletion
+  - Fixed TypeScript errors with `.returning()` method calls by handling both array and non-array returns
+  - Fixed deletion order: update products first, then delete variants before products
+  - Images are now stored with `/shoes/` path in database (e.g., `/shoes/shoe-1.jpg`, `/shoes/shoe-10.avif`)
+  - Database has been reseeded successfully with all 15 image files found
+- 2025-12-10 [Current Date]: Fixed duplicate filters sidebar rendering
+  - Added `desktopOnly` prop to Filters component to control when desktop sidebar renders
+  - FiltersClient now passes `desktopOnly={true}` to only render desktop sidebar
+  - MobileFiltersWrapper renders Filters without desktopOnly, so it only renders mobile drawer
+  - This prevents the desktop sidebar from being rendered twice (once from FiltersClient, once from MobileFiltersWrapper)
+  - Desktop sidebar now only renders once in the correct location
+- 2025-12-10 [Current Date]: Fixed navbar links and removed "New & Featured" tab
+  - Removed "New & Featured" link from both desktop and mobile navigation
+  - Updated navbar to match reference image structure: Men, Women, Kids, Sale, SNKRS
+  - Added onClick handler to close mobile menu when links are clicked
+  - Navigation links now properly filter products by gender when clicked
+- 2025-12-10 [Current Date]: Added padding to filter inputs and containers
+  - Added 5px left padding (pl-[5px]) to all filter input checkboxes
+  - Added 5px left padding (pl-[5px]) to filter option container divs (mt-4 space-y-3)
+  - This improves visual alignment and spacing of filter checkboxes
 
 

@@ -43,17 +43,36 @@ export default function Navbar() {
 
         {/* Desktop Navigation */}
         <div className="hidden lg:flex lg:gap-x-8">
-          {["New & Featured", "Men", "Women", "Kids", "Sale", "SNKRS"].map(
-            (item) => (
-              <Link
-                key={item}
-                href="#"
-                className="text-body-medium font-medium text-dark-900 hover:text-dark-700 hover:underline underline-offset-4 decoration-2"
-              >
-                {item}
-              </Link>
-            )
-          )}
+          <Link
+            href="/products?gender=men"
+            className="text-body-medium font-medium text-dark-900 hover:text-dark-700 hover:underline underline-offset-4 decoration-2"
+          >
+            Men
+          </Link>
+          <Link
+            href="/products?gender=women"
+            className="text-body-medium font-medium text-dark-900 hover:text-dark-700 hover:underline underline-offset-4 decoration-2"
+          >
+            Women
+          </Link>
+          <Link
+            href="/products?gender=kids"
+            className="text-body-medium font-medium text-dark-900 hover:text-dark-700 hover:underline underline-offset-4 decoration-2"
+          >
+            Kids
+          </Link>
+          <Link
+            href="/products"
+            className="text-body-medium font-medium text-dark-900 hover:text-dark-700 hover:underline underline-offset-4 decoration-2"
+          >
+            Sale
+          </Link>
+          <Link
+            href="/products"
+            className="text-body-medium font-medium text-dark-900 hover:text-dark-700 hover:underline underline-offset-4 decoration-2"
+          >
+            SNKRS
+          </Link>
         </div>
 
         {/* Icons */}
@@ -117,17 +136,41 @@ export default function Navbar() {
       {isMenuOpen && (
         <div className="lg:hidden border-t border-light-300">
           <div className="space-y-1 px-4 pb-3 pt-2">
-            {["New & Featured", "Men", "Women", "Kids", "Sale", "SNKRS"].map(
-              (item) => (
-                <Link
-                  key={item}
-                  href="#"
-                  className="block rounded-md px-3 py-2 text-body font-medium text-dark-900 hover:bg-light-200"
-                >
-                  {item}
-                </Link>
-              )
-            )}
+            <Link
+              href="/products?gender=men"
+              className="block rounded-md px-3 py-2 text-body font-medium text-dark-900 hover:bg-light-200"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Men
+            </Link>
+            <Link
+              href="/products?gender=women"
+              className="block rounded-md px-3 py-2 text-body font-medium text-dark-900 hover:bg-light-200"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Women
+            </Link>
+            <Link
+              href="/products?gender=kids"
+              className="block rounded-md px-3 py-2 text-body font-medium text-dark-900 hover:bg-light-200"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Kids
+            </Link>
+            <Link
+              href="/products"
+              className="block rounded-md px-3 py-2 text-body font-medium text-dark-900 hover:bg-light-200"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Sale
+            </Link>
+            <Link
+              href="/products"
+              className="block rounded-md px-3 py-2 text-body font-medium text-dark-900 hover:bg-light-200"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              SNKRS
+            </Link>
           </div>
         </div>
       )}

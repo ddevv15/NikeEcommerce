@@ -1,11 +1,18 @@
 import { Card } from "../../components/index";
 import { db } from "../../lib/db";
-import { products } from "../../lib/db/schema";
 
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
-  const allProducts = await db.select().from(products);
+  // Fetch products with their related category, default variant (for price), and images
+  const allProducts = await db.query.products.findMany({
+    where: (products, { eq }) => eq(products.isPublished, true),
+    with: {
+      category: true,
+      defaultVariant: true,
+      images: true,
+    },
+  });
 
   return (
     <main className="min-h-screen bg-light-100 font-jost">
@@ -16,17 +23,25 @@ export default async function Home() {
         </h1>
 
         <div className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 xl:gap-x-8">
-          {allProducts.map((product) => (
-             <Card 
+          {allProducts.map((product) => {
+            // Get price from default variant
+            const price = product.defaultVariant?.price ?? "0.00";
+            // Get primary image URL (prefer isPrimary, fallback to first image)
+            const primaryImage = product.images?.find((img: { isPrimary: boolean }) => img.isPrimary) ?? product.images?.[0];
+            const imageUrl = primaryImage?.url ?? "";
+            // Get category name
+            const categoryName = product.category?.name ?? "Uncategorized";
+            
+            return (
+              <Card 
                 key={product.id}
                 title={product.name}
-                category={product.category}
-                price={product.price}
-                imageUrl={product.imageUrl || ""}
-                colors={product.colors}
-                badge={product.badge as any}
-             />
-          ))}
+                category={categoryName}
+                price={price}
+                imageUrl={imageUrl}
+              />
+            );
+          })}
         </div>
       </div>
 
