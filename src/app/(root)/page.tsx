@@ -35,6 +35,7 @@ export default async function Home() {
             return (
               <Card 
                 key={product.id}
+                id={product.id}
                 title={product.name}
                 category={categoryName}
                 price={price}

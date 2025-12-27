@@ -5,13 +5,7 @@ import {
   PRICE_RANGES,
   type ProductFilters,
 } from "../../../lib/utils/query";
-import { db } from "../../../lib/db";
-import { eq, and, inArray } from "drizzle-orm";
-import {
-  products,
-  productVariants,
-  productImages,
-} from "../../../lib/db/schema";
+import { getAllProducts } from "@/lib/actions/product";
 import SortClient from "./SortClient";
 import ActiveFilters from "./ActiveFilters";
 import MobileHeader from "./MobileHeader";
@@ -20,130 +14,7 @@ import { FilterProvider } from "./MobileFiltersWrapper";
 
 export const dynamic = "force-dynamic";
 
-// Filter products based on filters
-async function filterAndSortProducts(filters: ProductFilters) {
-  // Build where conditions
-  const conditions = [eq(products.isPublished, true)];
 
-  // Gender filter
-  if (filters.gender && filters.gender.length > 0) {
-    // Fetch gender IDs from slugs
-    const genders = await db.query.genders.findMany({
-      where: (genders, { inArray }) => inArray(genders.slug, filters.gender!),
-    });
-    const genderIds = genders.map((g) => g.id);
-    if (genderIds.length > 0) {
-      conditions.push(inArray(products.genderId, genderIds));
-    }
-  }
-
-  // Fetch products with relations
-  let allProducts = await db.query.products.findMany({
-    where: and(...conditions),
-    with: {
-      category: true,
-      gender: true,
-      defaultVariant: {
-        with: {
-          color: true,
-          size: true,
-        },
-      },
-      variants: {
-        with: {
-          color: true,
-          size: true,
-        },
-      },
-      images: true,
-    },
-    orderBy: (products, { desc }) => [desc(products.createdAt)],
-  });
-
-  // Apply client-side filters that require variant data
-  let filteredProducts = allProducts;
-
-  // Color filter
-  if (filters.color && filters.color.length > 0) {
-    const colors = await db.query.colors.findMany({
-      where: (colors, { inArray }) => inArray(colors.slug, filters.color!),
-    });
-    const colorSlugs = colors.map((c) => c.slug);
-    filteredProducts = filteredProducts.filter((product) => {
-      return (product.variants as Array<{ color?: { slug: string } | null }>).some(
-        (variant) => variant.color && colorSlugs.includes(variant.color.slug)
-      );
-    });
-  }
-
-  // Size filter
-  if (filters.size && filters.size.length > 0) {
-    const sizes = await db.query.sizes.findMany({
-      where: (sizes, { inArray }) => inArray(sizes.slug, filters.size!),
-    });
-    const sizeSlugs = sizes.map((s) => s.slug);
-    filteredProducts = filteredProducts.filter((product) => {
-      return (product.variants as Array<{ size?: { slug: string } | null }>).some(
-        (variant) => variant.size && sizeSlugs.includes(variant.size.slug)
-      );
-    });
-  }
-
-  // Price range filter
-  if (filters.priceRange && filters.priceRange.length > 0) {
-    filteredProducts = filteredProducts.filter((product) => {
-      const defaultVariant = product.defaultVariant as { price?: string } | null;
-      const defaultPrice = defaultVariant?.price
-        ? parseFloat(defaultVariant.price)
-        : null;
-      if (defaultPrice === null) return false;
-
-      return filters.priceRange!.some((rangeValue) => {
-        const range = PRICE_RANGES.find((r) => r.value === rangeValue);
-        if (range) {
-          return defaultPrice >= range.min && defaultPrice < range.max;
-        }
-        return false;
-      });
-    });
-  }
-
-  // Sort products
-  let sortedProducts = [...filteredProducts];
-
-  switch (filters.sort) {
-    case "newest":
-      sortedProducts.sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-      break;
-    case "price_asc":
-      sortedProducts.sort((a, b) => {
-        const variantA = a.defaultVariant as { price?: string } | null;
-        const variantB = b.defaultVariant as { price?: string } | null;
-        const priceA = variantA?.price ? parseFloat(variantA.price) : Infinity;
-        const priceB = variantB?.price ? parseFloat(variantB.price) : Infinity;
-        return priceA - priceB;
-      });
-      break;
-    case "price_desc":
-      sortedProducts.sort((a, b) => {
-        const variantA = a.defaultVariant as { price?: string } | null;
-        const variantB = b.defaultVariant as { price?: string } | null;
-        const priceA = variantA?.price ? parseFloat(variantA.price) : 0;
-        const priceB = variantB?.price ? parseFloat(variantB.price) : 0;
-        return priceB - priceA;
-      });
-      break;
-    case "featured":
-    default:
-      // Keep original order (newest first from query)
-      break;
-  }
-
-  return sortedProducts;
-}
 
 // Get gender label for display
 function getGenderLabel(slug: string | null): string {
@@ -182,7 +53,8 @@ export default async function ProductsPage({ searchParams }: PageProps) {
   const filters = parseFilters(flatParams);
 
   // Filter and sort products from database
-  const sortedProducts = await filterAndSortProducts(filters);
+  // Filter and sort products from database
+  const { products: sortedProducts, totalCount } = await getAllProducts(filters);
 
   return (
     <FilterProvider>
@@ -264,28 +136,13 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                   id="product-grid"
                   className="grid grid-cols-1 gap-y-10 gap-x-6 sm:grid-cols-2 lg:grid-cols-3 xl:gap-x-8"
                 >
-                {sortedProducts.map((product) => {
-                  // Get price from default variant
-                  const defaultVariant = product.defaultVariant as { price?: string } | null;
-                  const price = defaultVariant?.price ?? "0.00";
-                    // Get primary image URL (prefer isPrimary, fallback to first image)
-                    // Sort images by sortOrder, then find primary or first
-                    const images =
-                      product.images && Array.isArray(product.images)
-                        ? [...product.images]
-                        : [];
-                    const sortedImages = images.sort(
-                      (
-                        a: typeof productImages.$inferSelect,
-                        b: typeof productImages.$inferSelect
-                      ) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0)
-                    );
-                    const primaryImage =
-                      sortedImages.find(
-                        (img: typeof productImages.$inferSelect) =>
-                          img.isPrimary
-                      ) ?? sortedImages[0];
-                    const imageUrl = primaryImage?.url ?? "";
+                  {sortedProducts.map((product) => {
+                    // Get price from pre-calculated minPrice
+                    // If range (min !== max), could show "From $X"
+                    const price = product.minPrice ? product.minPrice.toFixed(2) : "0.00";
+                    
+                    // Get primary image URL (already sorted in action)
+                    const imageUrl = product.images[0]?.url ?? "";
 
                     // Debug: Log if no image found
                     if (!imageUrl && process.env.NODE_ENV === "development") {
@@ -293,27 +150,24 @@ export default async function ProductsPage({ searchParams }: PageProps) {
                         "No image found for product:",
                         product.id,
                         product.name,
-                        "images:",
-                        images
                       );
                     }
 
                     // Get category name
-                    const categoryName =
-                      product.category?.name ?? "Uncategorized";
+                    const categoryName = product.category?.name ?? "Uncategorized";
+                    
                     // Get gender label
-                    const genderLabel = getGenderLabel(
-                      product.gender?.slug ?? null
-                    );
+                    const genderLabel = getGenderLabel(product.gender?.slug ?? null);
+                    
                     // Get color from default variant
-                    const defaultVariantWithColor = product.defaultVariant as { color?: { slug: string } | null } | null;
                     const colorLabel = getColorLabel(
-                      defaultVariantWithColor?.color?.slug ?? null
+                      product.defaultVariant?.color?.slug ?? null
                     );
 
                     return (
                       <Card
                         key={product.id}
+                        id={product.id}
                         title={product.name}
                         category={
                           genderLabel

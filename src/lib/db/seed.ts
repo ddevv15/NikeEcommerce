@@ -73,11 +73,7 @@ async function main() {
         { name: "L", slug: "l", sortOrder: 4 },
         { name: "XL", slug: "xl", sortOrder: 5 },
         { name: "XXL", slug: "xxl", sortOrder: 6 },
-        { name: "8", slug: "8", sortOrder: 7 }, // Shoe sizes
-        { name: "9", slug: "9", sortOrder: 8 },
-        { name: "10", slug: "10", sortOrder: 9 },
-        { name: "11", slug: "11", sortOrder: 10 },
-        { name: "12", slug: "12", sortOrder: 11 },
+
     ];
     const insertedSizes = await db.insert(schema.sizes).values(sizesData).returning();
 
@@ -176,18 +172,19 @@ async function main() {
             if (!firstVariantId) firstVariantId = variant.id;
 
             // Add Images to Variant/Product
-            // Pick random images (ensure we have images available)
+            // Use more images if available to showcase the gallery
             if (shoeImages.length > 0) {
-                const numImages = Math.min(2, shoeImages.length);
+                // Ensure we at least have 3 images if possible, or all available
+                const numImages = Math.min(5, shoeImages.length);
                 const imgs = faker.helpers.arrayElements(shoeImages, numImages);
-            for (let i = 0; i < imgs.length; i++) {
-                await db.insert(schema.productImages).values({
-                    productId: product.id,
-                    variantId: variant.id,
+                for (let i = 0; i < imgs.length; i++) {
+                    await db.insert(schema.productImages).values({
+                        productId: product.id,
+                        variantId: variant.id,
                         url: `/shoes/${imgs[i]}`,
-                    sortOrder: i,
-                    isPrimary: i === 0,
-                });
+                        sortOrder: i,
+                        isPrimary: i === 0,
+                    });
                 }
             } else {
                 console.warn(`No images available for product ${prodName}`);

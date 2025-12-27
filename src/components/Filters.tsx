@@ -34,11 +34,6 @@ const FILTER_GROUPS = [
       { label: "L", value: "l" },
       { label: "XL", value: "xl" },
       { label: "XXL", value: "xxl" },
-      { label: "8", value: "8" },
-      { label: "9", value: "9" },
-      { label: "10", value: "10" },
-      { label: "11", value: "11" },
-      { label: "12", value: "12" },
     ],
   },
   {

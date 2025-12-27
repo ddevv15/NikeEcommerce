@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 interface CardProps {
   title: string;
@@ -9,27 +10,31 @@ interface CardProps {
   badge?: { label: string; tone: "orange" | "green" | "red" } | null;
 }
 
-export default function Card({ title, category, price, imageUrl, colors, badge }: CardProps) {
+export default function Card({ title, category, price, imageUrl, colors, badge, id }: CardProps & { id?: string }) {
+  // Determine link target - fallback to '#' if no id provided, but usually id should be mandatory for routing.
+  // Assuming the user wants us to link to /products/[id].
+  const productHref = id ? `/products/${id}` : '#';
+
   return (
     <div className="group relative flex flex-col gap-4 font-jost">
       {/* Image Container */}
-      <div className="aspect-square w-full overflow-hidden rounded-md bg-light-200">
+      <div className="aspect-square w-full overflow-hidden rounded-md bg-light-200 relative">
         {imageUrl ? (
-          <Image
+        <Image
             src={imageUrl}
             alt={title}
             width={500}
             height={500}
             className="h-full w-full object-cover object-center transition-transform duration-300 group-hover:scale-105"
-          />
+        />
         ) : (
-          <div className="h-full w-full flex items-center justify-center bg-light-300 text-dark-500">
+        <div className="h-full w-full flex items-center justify-center bg-light-300 text-dark-500">
             <span className="text-sm">No Image</span>
-          </div>
+        </div>
         )}
         {badge && (
           <div
-            className={`absolute top-4 left-4 px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-sm ${
+            className={`absolute top-4 left-4 px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-sm z-10 ${
               badge.tone === "orange"
                 ? "bg-[#F36B26] text-white"
                 : badge.tone === "green"
@@ -47,10 +52,10 @@ export default function Card({ title, category, price, imageUrl, colors, badge }
 
         <div className="flex flex-col gap-1">
           <h3 className="text-body-medium font-medium text-dark-900 line-clamp-2">
-            <a href="#">
+            <Link href={productHref}>
                 <span aria-hidden="true" className="absolute inset-0" />
                 {title}
-            </a>
+            </Link>
           </h3>
           <p className="text-body-medium text-dark-700">{category}</p>
         </div>

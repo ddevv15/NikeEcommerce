@@ -19,11 +19,6 @@ const SIZE_LABELS: Record<string, string> = {
   l: "L",
   xl: "XL",
   xxl: "XXL",
-  "8": "Size 8",
-  "9": "Size 9",
-  "10": "Size 10",
-  "11": "Size 11",
-  "12": "Size 12",
 };
 
 const COLOR_LABELS: Record<string, string> = {

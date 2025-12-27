@@ -2,6 +2,7 @@ import queryString from "query-string";
 
 // Filter types
 export interface ProductFilters {
+    search?: string;
     gender?: string[];
     size?: string[];
     color?: string[];
@@ -40,6 +41,11 @@ export function parseFilters(searchParams: Record<string, string | string[] | un
         if (value) {
             filters[param] = Array.isArray(value) ? value : [value];
         }
+    }
+
+    // Parse search param
+    if (searchParams.search && typeof searchParams.search === "string") {
+        filters.search = searchParams.search;
     }
 
     // Parse sort param
