@@ -2,10 +2,18 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useCartStore } from "@/store/cart.store";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { cart, fetchCart } = useCartStore();
+
+  useEffect(() => {
+    fetchCart();
+  }, [fetchCart]);
+
+  const totalItems = cart?.totalItems || 0;
 
   return (
     <nav className="sticky top-0 z-50 w-full bg-light-100 font-jost">
@@ -114,7 +122,9 @@ export default function Navbar() {
               />
             </svg>
           </button>
-          <button className="p-2 hover:bg-light-200 rounded-full">
+          
+          {/* Cart Icon */}
+          <Link href="/cart" className="p-2 hover:bg-light-200 rounded-full relative group">
             <svg
               className="h-6 w-6 text-dark-900"
               fill="none"
@@ -128,7 +138,12 @@ export default function Navbar() {
                 d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
               />
             </svg>
-          </button>
+            {totalItems > 0 && (
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-dark-900 rounded-full min-w-[18px]">
+                  {totalItems}
+                </span>
+            )}
+          </Link>
         </div>
       </div>
 

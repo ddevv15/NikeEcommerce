@@ -1,9 +1,10 @@
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { Star, Heart, ShoppingBag } from "lucide-react";
+import { Star, Heart } from "lucide-react";
 
-import { ColorPicker, ProductGallery, SizePicker, CollapsibleSection, Card } from "@/components";
-import { getProduct, getAllProducts } from "@/lib/actions/product";
+import { ColorPicker, ProductGallery, SizePicker, CollapsibleSection, ProductReviews, RecommendedProducts, ProductActions } from "@/components";
+import { getProduct } from "@/lib/actions/product";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -11,59 +12,54 @@ interface PageProps {
 
 export default async function ProductPage({ params }: PageProps) {
   const { id } = await params;
-
-  // 1. Fetch main product details
   const product = await getProduct(id);
-  if (!product) return notFound();
 
-  // 2. Fetch related products (same category)
-  // We'll just fetch a few products from the same category, excluding current
-  const relatedResult = await getAllProducts({
-    // We could add category-based filtering if it exists in filters, 
-    // but for now let's just use the default newest.
-    // Ideally we'd filter by category slug or id.
-  });
-  
-  // Filter out the current product and take first 4
-  const relatedProducts = relatedResult.products
-    .filter(p => p.id !== product.id)
-    .slice(0, 4);
+  if (!product) {
+      return notFound();
+  }
 
   // Extract necessary UI data
   const title = product.name;
   const category = (product.gender?.label ? `${product.gender.label}'s ` : '') + (product.category?.name || "Shoes");
-  const price = product.defaultVariant?.price ? Number(product.defaultVariant.price) : product.minPrice;
-  const compareAtPrice = product.defaultVariant?.salePrice ? Number(product.defaultVariant.price) : undefined;
-  const actualPrice = product.defaultVariant?.salePrice ? Number(product.defaultVariant.salePrice) : price;
   
-  const discountPercent = compareAtPrice 
-    ? Math.round(((compareAtPrice - actualPrice) / compareAtPrice) * 100) 
+  // Price Logic
+  const defaultPrice = product.defaultVariant?.price ? Number(product.defaultVariant.price) : product.minPrice;
+  const defaultSalePrice = product.defaultVariant?.salePrice ? Number(product.defaultVariant.salePrice) : undefined;
+  
+  const currentPrice = defaultSalePrice || defaultPrice;
+  const originalPrice = defaultSalePrice ? defaultPrice : undefined;
+
+  const discountPercent = originalPrice 
+    ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100) 
     : 0;
 
   // Process images
   const allImages = product.images.length > 0 
     ? product.images.map(img => img.url) 
-    : ["/shoes/shoe-1.jpg"]; // Fallback if no images found
+    : ["/shoes/shoe-1.jpg"];
 
-  // Process unique colors from variants
-  // Map colors for the ColorPicker
+  // Process colors
   const uniqueColorsMap = new Map();
   product.variants.forEach(v => {
       if (v.color && !uniqueColorsMap.has(v.color.name)) {
           uniqueColorsMap.set(v.color.name, {
               name: v.color.name,
-              hex: (v.color as any).hexCode || "#000" // Assuming hexCode is in the DB
+              hex: (v.color as any).hexCode || "#000" // Fallback if hexCode missing
           });
       }
   });
   const availableColors = Array.from(uniqueColorsMap.values());
 
-  // Process unique sizes from variants
-  const availableSizes = Array.from(new Set(product.variants.map(v => v.size?.name).filter(Boolean))) as string[];
+  // Process sizes
+  const availableSizes = Array.from(new Set(product.variants.sort((a,b) => {
+      // Sort logic for sizes if needed, otherwise rely on DB order or default sort
+      return 0; 
+  }).map(v => v.size?.name).filter(Boolean))) as string[];
 
-  // Rating and reviews (placeholders if not in DB)
+  // Reviews placeholder logic for stars (actual reviews distinct)
   const rating = 4.8; 
-  const reviewCount = (product as any).reviews?.length || 0;
+  // We don't have total review count in product table, so we might need to count them or use separate query.
+  // For now, let's just say "Reviews" and load them below.
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 font-jost">
@@ -88,17 +84,15 @@ export default async function ProductPage({ params }: PageProps) {
            
            {/* Header Info */}
            <div className="flex flex-col gap-1">
-              <div className="flex justify-between items-start">
-                  <h1 className="text-heading-3 md:text-heading-2 font-bold text-dark-900 leading-tight">
-                    {title}
-                  </h1>
-              </div>
+              <h1 className="text-heading-3 md:text-heading-2 font-bold text-dark-900 leading-tight">
+                {title}
+              </h1>
               <p className="text-body-medium text-dark-700">{category}</p>
               
               <div className="mt-4 flex items-baseline gap-4">
-                 <span className="text-xl font-medium text-dark-900">${actualPrice.toFixed(2)}</span>
-                 {compareAtPrice && (
-                     <span className="text-body text-dark-500 line-through">${compareAtPrice.toFixed(2)}</span>
+                 <span className="text-xl font-medium text-dark-900">${currentPrice.toFixed(2)}</span>
+                 {originalPrice && (
+                     <span className="text-body text-dark-500 line-through">${originalPrice.toFixed(2)}</span>
                  )}
                  {discountPercent > 0 && (
                      <span className="text-body font-medium text-[#007d48]">
@@ -113,25 +107,25 @@ export default async function ProductPage({ params }: PageProps) {
                         <Star key={star} size={16} className={star <= Math.round(rating) ? "fill-current" : "text-light-400"} />
                     ))}
                  </div>
-                 <span className="text-sm text-dark-700 ml-2">({reviewCount} Review{reviewCount !== 1 ? 's' : ''})</span>
+                 {/* <span className="text-sm text-dark-700 ml-2">({reviewCount} Review{reviewCount !== 1 ? 's' : ''})</span> */}
               </div>
            </div>
 
            {/* Interactive Buying Form */}
-           <div className="flex flex-col gap-8 mt-4">
-               {availableColors.length > 0 && <ColorPicker colors={availableColors} />}
-               {availableSizes.length > 0 && <SizePicker sizes={availableSizes} />}
-           </div>
+           {/* We pass all variants so the client component can determine ID, Stock, Price for selected combos */}
+           <ProductActions 
+                productId={product.id}
+                variants={product.variants.map(v => ({
+                    id: v.id,
+                    color: v.color?.name || "",
+                    size: v.size?.name || "",
+                    stock: v.inStock,
+                    price: Number(v.price)
+                }))}
+                colors={availableColors}
+                sizes={availableSizes}
+           />
 
-           {/* Actions */}
-           <div className="flex flex-col gap-3">
-               <button className="w-full py-4 rounded-full bg-dark-900 text-white font-medium hover:bg-dark-700 transition-colors flex items-center justify-center gap-2">
-                   Add to Bag
-               </button>
-               <button className="w-full py-4 rounded-full border border-light-400 text-dark-900 font-medium hover:border-dark-900 transition-colors flex items-center justify-center gap-2">
-                   Favorite <Heart size={20} />
-               </button>
-           </div>
            
            {/* Description */}
            <div className="text-body text-dark-700 leading-relaxed mt-4">
@@ -143,24 +137,16 @@ export default async function ProductPage({ params }: PageProps) {
                <CollapsibleSection title="Product Details">
                    <p>Style: {product.id.substring(0, 8).toUpperCase()}</p>
                    <p>Country/Region of Origin: Vietnam</p>
-                   <p className="mt-2 text-dark-550 italic">More details about materials and construction vary by variant.</p>
+                   {product.brand && <p>Brand: {product.brand.name}</p>}
                </CollapsibleSection>
                <CollapsibleSection title="Shipping & Returns">
                    <p>Free standard shipping on orders over $50.</p>
                    <p>You can return your order for any reason, free of charge, within 30 days.</p>
                </CollapsibleSection>
-                <CollapsibleSection title={`Reviews (${reviewCount})`}>
-                   {reviewCount > 0 ? (
-                       <div className="py-2">
-                           {/* Review list placeholder */}
-                           <p>Real reviews from verified buyers will appear here.</p>
-                       </div>
-                   ) : (
-                        <div className="flex items-center gap-2 text-dark-500 py-4">
-                            <Star className="w-5 h-5 text-light-400" />
-                            <span>No reviews yet</span>
-                        </div>
-                   )}
+                <CollapsibleSection title="Reviews">
+                   <Suspense fallback={<div className="py-4 text-center">Loading reviews...</div>}>
+                        <ProductReviews productId={product.id} />
+                   </Suspense>
                </CollapsibleSection>
            </div>
 
@@ -169,25 +155,9 @@ export default async function ProductPage({ params }: PageProps) {
       </div>
 
       {/* Recommended Products */}
-      {relatedProducts.length > 0 && (
-          <div className="mt-24">
-              <h2 className="text-heading-3 font-medium text-dark-900 mb-8">You Might Also Like</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {relatedProducts.map((p) => (
-                      <Card 
-                         key={p.id}
-                         id={p.id}
-                         title={p.name}
-                         category={(p.gender?.label ? `${p.gender.label}'s ` : '') + (p.category?.name || "Shoes")}
-                         price={p.minPrice.toFixed(2)}
-                         imageUrl={p.images[0]?.url || ""}
-                         colors={`${(p as any).variants?.length || 0} Colours`}
-                         badge={p.createdAt > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) ? { label: "New", tone: "green" } : null}
-                      />
-                  ))}
-              </div>
-          </div>
-      )}
+      <Suspense fallback={<div className="h-96 mt-24 animate-pulse bg-light-200 rounded-lg"></div>}>
+          <RecommendedProducts productId={product.id} />
+      </Suspense>
 
     </div>
   );
